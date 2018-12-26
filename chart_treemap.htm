@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<title>d3 矩阵树图</title>
+	<style type="text/css">
+		.rect rect{
+			stroke: #fff;
+		}
+		.rect text{
+			font-size: 12px;
+		}
+	</style>
+</head>
+<body>
+
+<script type="text/javascript">
+	var width = 800, height = 600;
+	var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+	var data = {
+		"name": "中国",
+		"children":[
+		{
+			"name": "浙江",
+			"children": [
+				{"name": "杭州", "population": 5657 },
+				{"name": "温州", "population": 946.8 },
+				{"name": "宁波", "population": 921.5 },
+				{"name": "台州", "population": 800.5 },
+				{"name": "金华", "population": 556.4 },
+				{"name": "绍兴", "population": 501 },
+				{"name": "嘉兴", "population": 465.6 },
+				{"name": "湖州", "population": 299.5 },
+				{"name": "丽水", "population": 218.6 },
+				{"name": "衢州", "population": 218.5 },
+				{"name": "舟山", "population": 116.8 }
+			]
+		},
+		{
+			"name": "江苏",
+			"children": [
+				{"name": "苏州", "population": 1068.36 },
+				{"name": "徐州", "population": 876.35 },
+				{"name": "南京", "population": 833.5 },
+				{"name": "南通", "population": 730.5 },
+				{"name": "盐城", "population": 724.22 },
+				{"name": "无锡", "population": 655.3 },
+				{"name": "宿迁", "population": 491.46 },
+				{"name": "淮安", "population": 491.4 },
+				{"name": "常州", "population": 471.73 },
+				{"name": "泰州", "population": 465.19 },
+				{"name": "连云港", "population": 451.84 },
+				{"name": "扬州", "population": 450.82 },
+				{"name": "镇江", "population": 318.63 }
+			]
+		}
+		]
+	};
+	
+
+	var treemap = d3.layout.treemap().size([width, height]).value(function(d){
+		return d.population;
+	});
+
+	var nodes = treemap.nodes(data);
+	var links = treemap.links(nodes);
+	console.log(nodes);
+	var color = d3.scale.category20();
+
+	var rects = svg.selectAll(".rect").data(nodes.filter(function(d){
+		return !d.children;
+	})).enter().append("g").attr("class", "rect");
+
+	rects.append("rect").attr("x", function(d){
+		return d.x;
+	}).attr("y", function(d){
+		return d.y;
+	}).attr("width", function(d){
+		return d.dx;
+	}).attr("height", function(d){
+		return d.dy;
+	}).attr("fill", function(d, i){
+		return color(d.parent.name);
+	});
+
+	rects.append("text").text(function(d){
+		return d.name+" "+d.population;
+	}).attr("x", function(d){
+		return d.x;
+	}).attr("y", function(d){
+		return d.y;
+	}).attr("dy", "1em")
+
+</script>
+</body>
+</html>

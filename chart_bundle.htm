@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<title>d3 捆图</title>
+	<style type="text/css">
+		.link {
+			fill: none;
+			stroke-opacity: .5;
+			stroke-width: 4;
+			stroke: steelblue;
+		}
+		.node circle {
+			fill: #fff;
+			stroke: #000;
+			stroke-width: 2;
+		}
+		.node text{
+			font-size: 12px;
+		}
+	</style>
+</head>
+<body>
+
+<script type="text/javascript">
+	var width = 600, height = 600;
+	var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+
+	var nodes = {
+		name: "",
+		children: [
+			{name: "1"},
+			{name: "2"},
+			{name: "3"},
+			{name: "4"},
+			{name: "5"},
+			{name: "6"},
+			{name: "7"},
+			{name: "8"},
+			{name: "9"},
+		]
+	};
+
+	var links = [
+		{source: "1", target: "2"},
+		{source: "3", target: "5"},
+		{source: "1", target: "9"},
+		{source: "2", target: "7"},
+		{source: "6", target: "8"},
+		{source: "5", target: "7"},
+		{source: "1", target: "5"},
+		{source: "2", target: "6"},
+		{source: "3", target: "9"},
+		{source: "1", target: "4"},
+		{source: "4", target: "7"},
+		{source: "4", target: "8"},
+		{source: "5", target: "9"},
+		{source: "7", target: "8"}
+	];
+
+	var cluster = d3.layout.cluster().size([width/2, height/2-20]);
+	var bundle = d3.layout.bundle();
+
+	var bundle_nodes = cluster.nodes(nodes);
+	console.log(bundle_nodes);
+
+	function map(nodes, links) {
+		var hash = [];
+		for(var i=0; i<nodes.length; i++){
+			hash[nodes[i].name] = nodes[i];
+		}
+
+		var resultLinks = [];
+		console.log(nodes);
+		for(var i=0; i<links.length; i++){
+			resultLinks.push({source: hash[links[i].source], target: hash[links[i].target]})
+		}
+		return resultLinks;
+	}
+
+	var resultLinks = map(bundle_nodes, links);
+	var bundle_links = bundle(resultLinks);
+
+	var line = d3.svg.line.radial().interpolate("bundle").radius(function(d){
+		return d.y;
+	}).angle(function(d){
+		return d.x/180*Math.PI;
+	});
+
+	var bundles = svg.append("g").attr("transform", "translate("+width/2+", "+height/2+")");
+
+	var link = bundles.selectAll(".link").data(bundle_links).enter().append("path").attr("class", "link").attr("d", line);
+
+	var node = bundles.selectAll(".node").data(bundle_nodes.filter(function(d){
+		return !d.children;
+	})).enter().append("g").attr("class", "node").attr("transform", function(d){
+		return "rotate("+(d.x-90)+")translate("+d.y+")rotate("+(90-d.x)+")";
+	});
+
+	node.append("circle").attr("r", 6);
+	node.append("text").text(function(d){
+		return d.name;
+	}).attr("dy", ".4em").attr("text-anchor", "middle");
+</script>
+</body>
+</html>

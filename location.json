@@ -1,0 +1,10 @@
+{
+	"name": "中国",
+	"location": [
+		{"name": "北京", "log": "116.46", "lat": "39.92", "img": "img/bj.jpg"},
+		{"name": "上海", "log": "120.52", "lat": "30.40", "img": "img/sh.jpg"},
+		{"name": "拉萨", "log": "91.1", "lat": "29.97", "img": "img/ls.jpeg"},
+		{"name": "青海", "log": "89.35", "lat": "31.9", "img": "img/qh.jpeg"},
+		{"name": "新疆", "log": "87.86", "lat": "43.77", "img": "img/xj.jpeg"}
+	]
+}

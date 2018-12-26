@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<title>d3 堆栈图</title>
+	<style type="text/css">
+		.axis path, .axis line{
+			fill: none;
+			stroke: black;
+			shape-rendering: crispEdges;
+		}
+	</style>
+</head>
+<body>
+
+<script type="text/javascript">
+	var width = 600, height = 400;
+	var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+	var dataset = [
+		{ 
+			name: "PC" , 
+		    sales: [  
+		    	{ year:2005, profit: 3000 },
+		        { year:2006, profit: 1300 },
+		        { year:2007, profit: 3700 },
+		        { year:2008, profit: 4900 },
+		        { year:2009, profit: 700 }
+		    ] 
+		},
+	    { 
+	    	name: "SmartPhone" , 
+	      	sales: [  
+	      		{ year:2005, profit: 2000 },
+	          	{ year:2006, profit: 4000 },
+	          	{ year:2007, profit: 1810 },
+	         	{ year:2008, profit: 6540 },
+	          	{ year:2009, profit: 2820 }
+	        ] 
+	    },
+	    { 
+	    	name: "Software" , 
+	      	sales: [  
+	      		{ year:2005, profit: 1100 },
+	          	{ year:2006, profit: 1700 },
+	          	{ year:2007, profit: 1680 },
+	          	{ year:2008, profit: 4000 },
+	          	{ year:2009, profit: 4900 }
+	        ] 
+	    }
+	];
+
+	var stack = d3.layout.stack().values(function(d){
+		return d.sales;
+	}).x(function(d){
+		return d.year;
+	}).y(function(d){
+		return d.profit;
+	});
+
+	var data = stack(dataset);
+	console.log(data);
+
+	var padding = {top: 30, right: 120, bottom: 30, left: 80};
+
+	var xAxisWidth = width - padding.left - padding.right;
+	var yAxisWidth = height - padding.top - padding.bottom;
+	var xScale = d3.scale.ordinal().domain(data[0].sales.map(function(d){
+		return d.year;
+	})).rangeBands([0, xAxisWidth], 0.1);
+	var yScale = d3.scale.linear().domain([0, d3.max(data[2].sales, function(d){
+		return d.y0 + d.y;
+	})]).range([0, yAxisWidth]);
+	var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+	var yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+	var xaxis = svg.append("g").attr("class", "axis").attr("transform", "translate("+padding.left+", "+(height-padding.top)+")").call(xAxis);
+
+	var color = d3.scale.category10();
+
+	var groups = svg.selectAll(".group").data(data).enter().append("g").attr("class", "group").attr("fill", function(d, i){
+		return color(i);
+	});
+
+	var rects = groups.selectAll("rect").data(function(d){
+		return d.sales;
+	}).enter().append("rect").attr("x", function(d){
+		return xScale(d.year);
+	}).attr("y", function(d){
+		return yAxisWidth - yScale(d.y0+d.y);
+	}).attr("width", function(d){
+		return xScale.rangeBand();
+	}).attr("height", function(d){
+		return yScale(d.y);
+	}).attr("transform", "translate("+padding.left+", "+padding.top+")");
+
+	yScale.range([yAxisWidth, 0]);
+	var yaxis = svg.append("g").attr("class", "axis").call(yAxis).attr("transform", "translate("+padding.left+", "+padding
+		.top+")");
+
+	var labelHeight = 50;
+	groups.append("circle").attr("r", 10).attr("cx", width-padding.right*0.9).attr("cy", function(d, i){
+		return padding.top + labelHeight*i;
+	});
+	groups.append("text").text(function(d){
+		return d.name;
+	}).attr("x", width-padding.right*0.8).attr("y", function(d, i){
+		return padding.top + labelHeight*i;
+	}).attr("dy", ".3em");
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="http://d3js.org/topojson.v1.min.js" charset="utf-8"></script>
+	<title>d3 渐变的地图</title>
+</head>
+<body>
+
+<script type="text/javascript">
+	var width = 1000, height = 800;
+	var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+
+	var projection = d3.geo.mercator().center([100, 10]).scale(600).translate([width/2, height/2]);
+
+	var path = d3.geo.path().projection(projection);
+
+	d3.json("china.topojson", function(error, toporoot){
+		if(error) return console.error(error);
+
+		console.log(toporoot);
+		var georoot = topojson.feature(toporoot, toporoot.objects.china);
+		console.log(georoot.features);
+
+		var provinces = svg.selectAll("path").data(georoot.features).enter().append("path").attr("d", path).attr("stroke", "#000").attr("transform", "translate(0, 400)");
+
+
+		d3.json("province.json", function(error, root){
+			if(error) return console.error(error);
+
+			var maxValue = d3.max(root.provinces, function(d){
+				return d.value;
+			});
+			var minValue = 0;
+			var linear = d3.scale.linear().domain([minValue, maxValue]).range([0, 1]);
+
+			var a = d3.rgb(251, 232, 228), b = d3.rgb(255, 0, 0);
+			var color = d3.interpolate(a, b);
+
+			var values = [];
+			for(var i=0; i<root.provinces.length; i++){
+				values[root.provinces[i].name] = root.provinces[i].value;
+			}
+
+			provinces.attr("fill", function(d){
+				return color(linear(values[d.properties.name]));
+			});
+
+			var defs = svg.append("defs");
+			var linearGradient = defs.append("linearGradient").attr("id", "linearColor").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
+
+			var stop1 = linearGradient.append("stop").attr("offset", "0%").style("stop-color", a.toString());
+			var stop2 = linearGradient.append("stop").attr("offset", "100%").style("stop-color", b.toString());
+
+			var colorRect = svg.append("rect").attr("x", 20).attr("y", 500).attr("width", 180).attr("height", 45).style("fill", "url(#"+linearGradient.attr("id")+")");
+
+			var minValueText = svg.append("text").attr("x", 20).attr("y", 500).text(minValue);
+
+			var maxValueText = svg.append("text").attr("x", 130).attr("y", 500).text(maxValue);
+		});
+
+	});
+
+
+	
+</script>
+</body>
+</html>
